@@ -64,7 +64,7 @@ export const generateDailyRates = (scenario: Scenario, holidays: Holiday[]): Dai
     let Sd = 0;
     let isTurn = false;
     const LmStr = LmMap.get(month)!;
-    const LmDate = new Date(LmStr);
+    // Removed unused LmDate here
 
     // Rule 1: Last Working Day
     if (dateStr === LmStr) {
