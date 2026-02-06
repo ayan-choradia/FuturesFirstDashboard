@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { Scenario, MonthlyContract, Holiday } from '../types';
 import { generateDailyRates, calculateContracts } from '../utils/analytics';
-import { ArrowRight } from 'lucide-react';
 
 interface Props {
   scenarios: Scenario[];
@@ -50,38 +49,55 @@ const ComparisonView: React.FC<Props> = ({ scenarios, holidays, onClose }) => {
       </div>
 
       <div className="flex-1 overflow-auto p-6 custom-scrollbar">
-        <table className="min-w-full divide-y divide-slate-700">
+        <table className="min-w-full divide-y divide-slate-700 text-right">
           <thead className="bg-slate-800">
             <tr>
               <th className="px-4 py-2 text-left text-xs font-bold text-slate-400">Month</th>
-              <th className="px-4 py-2 text-right text-xs font-bold text-slate-400">Outright A</th>
-              <th className="px-4 py-2 text-right text-xs font-bold text-slate-400">Outright B</th>
-              <th className="px-4 py-2 text-right text-xs font-bold text-indigo-400">Delta</th>
-              <th className="px-4 py-2 text-right text-xs font-bold text-slate-400 border-l border-slate-700">Spread A</th>
-              <th className="px-4 py-2 text-right text-xs font-bold text-slate-400">Spread B</th>
-              <th className="px-4 py-2 text-right text-xs font-bold text-purple-400">Delta</th>
+              <th className="px-4 py-2 text-xs font-bold text-slate-400">Outright A</th>
+              <th className="px-4 py-2 text-xs font-bold text-slate-400">Outright B</th>
+              <th className="px-4 py-2 text-xs font-bold text-indigo-400">Delta</th>
+              <th className="px-4 py-2 text-xs font-bold text-slate-400 border-l border-slate-700">Spread A</th>
+              <th className="px-4 py-2 text-xs font-bold text-slate-400">Spread B</th>
+              <th className="px-4 py-2 text-xs font-bold text-purple-400">Delta</th>
+              <th className="px-4 py-2 text-xs font-bold text-slate-400 border-l border-slate-700">Fly A</th>
+              <th className="px-4 py-2 text-xs font-bold text-slate-400">Fly B</th>
+              <th className="px-4 py-2 text-xs font-bold text-teal-400">Delta</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-700">
              {dataA.map((rowA, i) => {
                const rowB = dataB[i];
+               if (!rowB) return null;
+
                const deltaOutright = rowA.outright - rowB.outright;
+               
                const spreadA = rowA.spread1M || 0;
                const spreadB = rowB.spread1M || 0;
                const deltaSpread = spreadA - spreadB;
 
+               const flyA = rowA.fly1M || 0;
+               const flyB = rowB.fly1M || 0;
+               const deltaFly = flyA - flyB;
+
                return (
                  <tr key={rowA.month} className="hover:bg-slate-800/50">
-                   <td className="px-4 py-3 text-sm font-medium text-slate-200">{rowA.monthName}</td>
-                   <td className="px-4 py-3 text-sm text-right text-slate-400">{rowA.outright.toFixed(4)}</td>
-                   <td className="px-4 py-3 text-sm text-right text-slate-400">{rowB.outright.toFixed(4)}</td>
-                   <td className={`px-4 py-3 text-sm text-right font-bold ${deltaOutright > 0 ? 'text-green-400' : deltaOutright < 0 ? 'text-red-400' : 'text-slate-500'}`}>
+                   <td className="px-4 py-3 text-sm font-medium text-slate-200 text-left">{rowA.monthName}</td>
+                   <td className="px-4 py-3 text-sm text-slate-400">{rowA.outright.toFixed(4)}</td>
+                   <td className="px-4 py-3 text-sm text-slate-400">{rowB.outright.toFixed(4)}</td>
+                   <td className={`px-4 py-3 text-sm font-bold ${deltaOutright > 0 ? 'text-green-400' : deltaOutright < 0 ? 'text-red-400' : 'text-slate-500'}`}>
                      {deltaOutright.toFixed(4)}
                    </td>
-                   <td className="px-4 py-3 text-sm text-right text-slate-400 border-l border-slate-700">{spreadA.toFixed(4)}</td>
-                   <td className="px-4 py-3 text-sm text-right text-slate-400">{spreadB.toFixed(4)}</td>
-                   <td className={`px-4 py-3 text-sm text-right font-bold ${deltaSpread > 0 ? 'text-green-400' : deltaSpread < 0 ? 'text-red-400' : 'text-slate-500'}`}>
+                   
+                   <td className="px-4 py-3 text-sm text-slate-400 border-l border-slate-700">{spreadA.toFixed(4)}</td>
+                   <td className="px-4 py-3 text-sm text-slate-400">{spreadB.toFixed(4)}</td>
+                   <td className={`px-4 py-3 text-sm font-bold ${deltaSpread > 0 ? 'text-green-400' : deltaSpread < 0 ? 'text-red-400' : 'text-slate-500'}`}>
                      {deltaSpread.toFixed(4)}
+                   </td>
+
+                   <td className="px-4 py-3 text-sm text-slate-400 border-l border-slate-700">{flyA.toFixed(4)}</td>
+                   <td className="px-4 py-3 text-sm text-slate-400">{flyB.toFixed(4)}</td>
+                   <td className={`px-4 py-3 text-sm font-bold ${deltaFly > 0 ? 'text-green-400' : deltaFly < 0 ? 'text-red-400' : 'text-slate-500'}`}>
+                     {deltaFly.toFixed(4)}
                    </td>
                  </tr>
                )

@@ -35,6 +35,7 @@ export interface MonthlyContract {
   avgRate: number; // Avg_m
   outright: number; // 100 - Avg_m
   spread1M?: number; // Outright(m) - Outright(m+1)
+  fly1M?: number; // Spread(m) - Spread(m+1)
 }
 
 export interface Holiday {

@@ -194,18 +194,27 @@ export const calculateContracts = (dailyRates: DailyRate[]): MonthlyContract[] =
       year: 2026,
       avgRate: avg,
       outright: 100 - avg,
-      spread1M: undefined // Filled next
+      spread1M: undefined,
+      fly1M: undefined
     });
   }
 
   // Calculate 1M Spread: Outright(m) - Outright(m+1)
   for (let i = 0; i < contracts.length; i++) {
     if (i < contracts.length - 1) {
-      // 1M Spread (bps) ? Prompt doesn't specify unit, but spreads are usually bps.
-      // Outright is price (e.g. 95.50). Diff is e.g. 0.20. 
-      // Prompt validation: "1M Spread value".
-      // Let's assume price difference.
       contracts[i].spread1M = (contracts[i].outright - contracts[i+1].outright);
+    }
+  }
+
+  // Calculate 1M Fly: Spread(m) - Spread(m+1)
+  // Fly(m) = (Outright(m) - Outright(m+1)) - (Outright(m+1) - Outright(m+2))
+  for (let i = 0; i < contracts.length; i++) {
+    if (i < contracts.length - 2) {
+      const s1 = contracts[i].spread1M;
+      const s2 = contracts[i+1].spread1M;
+      if (s1 !== undefined && s2 !== undefined) {
+         contracts[i].fly1M = s1 - s2;
+      }
     }
   }
 

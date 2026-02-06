@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { DailyRate, MonthlyContract, Scenario } from '../types';
-import { Calendar as CalendarIcon, Grid, Activity, BarChart2, Download, TrendingUp } from 'lucide-react';
-import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip as ReTooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend } from 'recharts';
+import { Calendar as CalendarIcon, Grid, Activity, Download, TrendingUp } from 'lucide-react';
+import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip as ReTooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
 import * as XLSX from 'xlsx';
 
 interface Props {
@@ -23,7 +23,8 @@ const Dashboard: React.FC<Props> = ({ dailyRates, contracts, scenario }) => {
       Month: c.monthName,
       'Avg Rate (%)': c.avgRate.toFixed(4),
       'Outright Price': c.outright.toFixed(4),
-      '1M Spread': c.spread1M !== undefined ? c.spread1M.toFixed(4) : '-'
+      '1M Spread': c.spread1M !== undefined ? c.spread1M.toFixed(4) : '-',
+      '1M Fly': c.fly1M !== undefined ? c.fly1M.toFixed(4) : '-'
     }));
     const wsMatrix = XLSX.utils.json_to_sheet(matrixData);
     XLSX.utils.book_append_sheet(wb, wsMatrix, 'Matrix');
@@ -153,6 +154,7 @@ const Dashboard: React.FC<Props> = ({ dailyRates, contracts, scenario }) => {
                     <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Avg Rate (%)</th>
                     <th className="px-6 py-4 text-right text-xs font-bold text-indigo-400 uppercase tracking-wider">Outright Price</th>
                     <th className="px-6 py-4 text-right text-xs font-bold text-purple-400 uppercase tracking-wider">1M Spread</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-teal-400 uppercase tracking-wider">1M Fly</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700 bg-slate-800">
@@ -163,6 +165,9 @@ const Dashboard: React.FC<Props> = ({ dailyRates, contracts, scenario }) => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-indigo-300">{c.outright.toFixed(4)}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-purple-300">
                         {c.spread1M !== undefined ? c.spread1M.toFixed(4) : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-teal-300">
+                        {c.fly1M !== undefined ? c.fly1M.toFixed(4) : '-'}
                       </td>
                     </tr>
                   ))}
@@ -200,7 +205,7 @@ const Dashboard: React.FC<Props> = ({ dailyRates, contracts, scenario }) => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
                 {/* Outright Comparison */}
                 <div className="h-64">
                    <h4 className="text-sm font-semibold text-slate-400 mb-4 text-center">Outright Price Comparison</h4>
@@ -220,7 +225,7 @@ const Dashboard: React.FC<Props> = ({ dailyRates, contracts, scenario }) => {
 
                 {/* Spread History */}
                 <div className="h-64">
-                   <h4 className="text-sm font-semibold text-slate-400 mb-4 text-center">1M Spread Curve (Jan-Dec)</h4>
+                   <h4 className="text-sm font-semibold text-slate-400 mb-4 text-center">1M Spread Curve</h4>
                    <ResponsiveContainer width="100%" height="100%">
                      <LineChart data={contracts.filter(c => c.spread1M !== undefined)}>
                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
@@ -230,6 +235,22 @@ const Dashboard: React.FC<Props> = ({ dailyRates, contracts, scenario }) => {
                          contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9' }}
                        />
                        <Line type="monotone" dataKey="spread1M" stroke="#d946ef" strokeWidth={3} dot={{r:4, fill: '#d946ef'}} activeDot={{r:6}} />
+                     </LineChart>
+                   </ResponsiveContainer>
+                </div>
+
+                {/* Fly History */}
+                <div className="h-64">
+                   <h4 className="text-sm font-semibold text-slate-400 mb-4 text-center">1M Fly Curve</h4>
+                   <ResponsiveContainer width="100%" height="100%">
+                     <LineChart data={contracts.filter(c => c.fly1M !== undefined)}>
+                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
+                       <XAxis dataKey="monthName" stroke="#94a3b8" />
+                       <YAxis stroke="#94a3b8" />
+                       <ReTooltip 
+                         contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9' }}
+                       />
+                       <Line type="monotone" dataKey="fly1M" stroke="#2dd4bf" strokeWidth={3} dot={{r:4, fill: '#2dd4bf'}} activeDot={{r:6}} />
                      </LineChart>
                    </ResponsiveContainer>
                 </div>
