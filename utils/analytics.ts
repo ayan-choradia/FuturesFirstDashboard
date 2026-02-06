@@ -1,11 +1,6 @@
 import { Scenario, DailyRate, MonthlyContract, Holiday } from '../types';
 import { MONTH_NAMES } from '../constants';
 
-// Helper to check if a date string matches
-const isSameDate = (d1: Date, dStr: string) => {
-  return d1.toISOString().split('T')[0] === dStr;
-};
-
 // Find the last business day of a given month
 const getLastBusinessDay = (year: number, month: number, holidaySet: Set<string>): Date => {
   let d = new Date(year, month + 1, 0); // Last day of month
@@ -81,18 +76,6 @@ export const generateDailyRates = (scenario: Scenario, holidays: Holiday[]): Dai
     // Rule 2: Weekend Carry-Over
     // If d is Sat or Sun immediately following Lm
     else if (isWeekend) {
-        // Check if this weekend immediately follows Lm
-        const oneDayMs = 24 * 60 * 60 * 1000;
-        const diffDays = Math.round((d.getTime() - LmDate.getTime()) / oneDayMs);
-        
-        // If diff is 1 (Sat follows Fri Lm) or 2 (Sun follows Fri Lm)
-        // Wait, if Lm is Fri, Sat is +1 day, Sun is +2 days. 
-        // If Lm is Thu (Fri holiday), Fri is holiday, Sat is +2 days. 
-        // "Rule 2: If d is a Saturday or Sunday that immediately follows Lm". 
-        // Interpretation: Consecutive days.
-        
-        // Let's implement strict check: 
-        // Is d - 1 day == Lm? OR (Is d - 1 day == Sat AND d - 2 days == Lm)?
         
         const prevDay = new Date(d);
         prevDay.setDate(d.getDate() - 1);
@@ -132,19 +115,9 @@ export const generateDailyRates = (scenario: Scenario, holidays: Holiday[]): Dai
         if (isTurn) {
             // Covered by Rule 2
             finalRate = baseRate + Sd; 
-            // Note: Base rate technically should be the base rate of the day d. 
-            // But usually weekend base rate is same as friday base rate unless meeting was friday.
-            // If meeting was friday (hike effective sat), base changes. 
-            // Standard Fixed Income logic often carries the whole rate.
-            // But prompt says: "Base_d = E + C_d", "S_d = ...", "R_d = Base_d + S_d".
-            // So we use Base_d (calculated above) + S_d (carried over).
         } else {
             // Rule 3 / Standard Logic
             finalRate = prevBizRate;
-            // For the export breakdown, we need to decompose prevBizRate into Base/Turn if possible?
-            // Or just report as is. We will report calculated Base_d and implied Turn.
-            // However, to keep "Base + Turn = Final" consistent in export:
-            // If we are just copying prevBizRate, Turn is effectively (prevBizRate - currentBase).
             Sd = finalRate - baseRate;
         }
     }
@@ -153,15 +126,7 @@ export const generateDailyRates = (scenario: Scenario, holidays: Holiday[]): Dai
       date: dateStr,
       dayType: isBusinessDay ? 'Business' : isWeekend ? 'Weekend' : 'Holiday',
       baseRate: baseRate,
-      turnPremium: Sd * 10000, // logic uses % (0.05), export wants bps? No, UI uses %. Wait, logic uses 0.043.
-      // Sd is in %. e.g. 0.05 (5%).
-      // The inputs turn premiums are in bps (e.g. 5 bps = 0.05%).
-      // In code: Sd = turns.monthEnd / 100. If input is 5, Sd = 0.05.
-      // 5 bps is 0.05%. Correct.
-      // Wait. 1 bp = 0.01%. 5 bps = 0.05%.
-      // Input 4.3 is %. 
-      // 25 bps hike = 0.25%.
-      // My code: hike/100. 25/100 = 0.25. Correct.
+      turnPremium: Sd * 10000, 
       finalRate: finalRate,
       isMeetingDate: scenario.meetings.some(m => m.date === dateStr),
       isTurn: Math.abs(Sd) > 0.00001

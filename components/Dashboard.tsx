@@ -158,7 +158,7 @@ const Dashboard: React.FC<Props> = ({ dailyRates, contracts, scenario }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700 bg-slate-800">
-                  {contracts.map((c, idx) => (
+                  {contracts.map((c) => (
                     <tr key={c.month} className="hover:bg-slate-700/50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-200">{c.monthName} '26</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-slate-300">{c.avgRate.toFixed(4)}%</td>
